@@ -1,0 +1,169 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+
+{% block title %}Product Management{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/exp.css' %}">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+<div class="create-product">
+    <button id="createProductBtn" class="btn btn-create"><i class="fas fa-plus"></i> Create Product</button>
+</div>
+
+<div id="productForm" class="product-form" style="display: none;">
+    <label for="product_cat">Category </label>
+    <select required id="product_cat">
+        <option value="" disabled selected>Categories</option>
+        <option value="Fruits">Fruits</option>
+        <option value="Vegetables">Vegetables</option>
+        <option value="Essentials">Essentials</option>
+    </select>
+
+    <label for="product_name">Product Name:</label>
+    <input type="text" id="product_name" name="product_name" required>
+    
+    <label for="product_total">Quantity:</label>
+    <input type="number" id="product_total" name="product_total" required>
+    
+    <button type="button" class="btn btn-submit" onclick="add()">Submit</button>
+    <button type="button" class="btn btn-reset" onclick="resetForm()">Reset</button>
+</div>
+
+{% for category, products in categorized_products.items %}
+  <div class="table-container">
+    <h2 style="text-align: center;color:rgba(0, 0, 0,0.6)">{{ category }} :</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Serial number</th>
+          <th>Product Name</th>
+          <th>Quantity</th>
+          <th>Product ID</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr id="row-{{ product.pro_id }}">
+            <td>{{ forloop.counter }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.quantiy }} Kg</td>
+            <td>{{ product.pro_id }}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-edit" onclick="editRow('{{ product.pro_id }}')"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn btn-delete" onclick="deleteProduct('{{ product.pro_id }}');"><i class="fas fa-trash-alt"></i> Delete</button>
+              </div>
+            </td>
+          </tr>
+          <tr id="form-{{ product.pro_id }}" class="edit-form" style="display: none;">
+            <td>{{ forloop.counter }}</td>
+            <td><input type="text" id="pname{{ product.pro_id }}" value="{{ product.name }}"></td>
+            <td><input type="number" id="pquantity{{ product.pro_id }}" value="{{ product.quantiy }}"></td>
+            <td>{{ product.pro_id }}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn btn-edit" onclick='saveChanges("{{ product.pro_id }}");'>Save</button>
+                <button class="btn btn-delete" onclick="cancelEdit('{{ product.pro_id }}')">Cancel</button>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">No products available in this category.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endfor %}
+<script>
+// Script to handle form display
+document.getElementById("createProductBtn").addEventListener("click", function() {
+   var form = document.getElementById("productForm");
+   form.style.display = (form.style.display === "none") ? "block" : "none";
+});
+
+function saveChanges(pro_id) {
+    var pname = $('#pname' + pro_id).val();
+    var pqt = $('#pquantity' + pro_id).val();
+
+    if (confirm('Are you sure you want to edit this user?')) {
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'edit_product' %}",
+            data: { "id": pro_id, "pname": pname, "pqt": pqt },
+            success: function (data) {
+                if (data) {
+                    window.location.replace('/u_product');
+                }
+            }
+        });
+    }
+}
+
+function add() {
+    var product_name = $("#product_name").val();
+    var product_qt = $("#product_total").val();
+    var product_cat = $("#product_cat").val();
+    document.getElementById("productForm").style.display = "none";
+
+    alert("Product added!");
+
+    $.ajax({
+        type: "POST",
+        url: "{% url 'create_product' %}",
+        data: {
+            "product_name": product_name,
+            "product_qt": product_qt,
+            "product_cat": product_cat
+        },
+        success: function (data) {
+            window.location.replace("/u_product");
+        }
+    });
+}
+
+function resetForm() {
+    document.getElementById("product_name").value = "";
+    document.getElementById("product_total").value = "";
+    document.getElementById("product_cat").value = "";
+}
+
+function deleteProduct(pro_id) {
+    $.ajax({
+        type: "POST",
+        url: "{% url 'delete_product' %}",
+        data: {
+            "product_id": pro_id,
+        },
+        success: function() {
+            window.location.reload();
+        }
+    });
+}
+
+function editRow(id) {
+    $('#row-' + id).hide();
+    $('#form-' + id).show();
+}
+
+function cancelEdit(id) {
+    $('#form-' + id).hide();
+    $('#row-' + id).show();
+}
+</script>
+
+</body>
+</html>
+{% endblock %}

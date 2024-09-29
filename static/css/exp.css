@@ -1,0 +1,452 @@
+:root {
+    --blue: #1d3557;
+    --white: #f1faee;
+    --black: #111;
+    --gray: #8d99ae;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #f1f5f8;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+/* Container */
+.container {
+    display: flex;
+    width: 100%;
+    /* height: 100vh; */
+}
+
+/* Navigation Bar */
+.navigation {
+    position: fixed;
+    width: 270px;
+    height: 100%;
+    background: var(--blue);
+    padding-top: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll; 
+    overflow-x: hidden;
+}
+
+/* User Info */
+.navigation .user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-left: 20px;
+}
+
+.navigation .profile-pic {
+    width: 100px;
+    height: 128px;
+    border-radius: 50%;
+    background-image: url(/static/img/profile.jpg);
+    margin-right: 10px;
+    background-size: cover;
+    background-position: center;
+}
+
+.navigation .user-name {
+    color: var(--white);
+    font-size: 1.2rem;
+}
+
+/* Navigation Links */
+.navigation ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+.navigation ul li a{
+    text-decoration: none;
+}
+
+.navigation ul li {
+    margin-bottom: 10px;
+}
+
+.navigation ul li button {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    width: 100%;
+    text-decoration: none;
+    background: none;
+    border: none;
+    color: var(--white);
+    border-radius: 10px;
+    transition: background 0.3s, color 0.3s;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.navigation ul li button .icon {
+    margin-right: 15px;
+    font-size: 1.5rem;
+}
+
+.navigation ul li button:hover {
+    background: var(--white);
+    color: var(--blue);
+}
+
+.navigation ul li button:hover .icon {
+    color: var(--blue);
+}
+
+/* Sign Out Button Styling */
+.navigation ul li.signout {
+    margin-top: auto; /* Push to bottom */
+    margin-bottom: 20px; /* Space from bottom */
+}
+
+/* Main Content */
+.main-content {
+    margin-left: 270px; /* Offset for the navigation bar */
+    padding: 20px;
+    width: calc(100% - 270px); /* Full width minus the navigation bar width */
+     /* Handle overflow if content is larger than viewport */
+    overflow-y: auto; /* Handle vertical overflow if content is larger than viewport */
+    min-height: 100vh;
+}
+
+/* Card Section */
+.cardBox {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping of cards */
+    gap: 30px; /* Space between cards */
+    justify-content: flex-start; /* Align cards to the start */
+    margin-left: 22%;
+    padding-bottom: 20px;
+}
+
+.cardBox .card {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content:space-evenly;
+    cursor: pointer;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+    height: 90px;
+    width: 180px; /* Adjust width as needed */
+    text-align: center;
+    transition: background 0.3s, color 0.3s; /* Ensure transition is smooth */
+}
+
+.cardBox .card .numbers {
+    font-weight: 500;
+    font-size: 1.5rem;
+    color: var(--blue);
+}
+
+.cardBox .card .cardName {
+    color: var(--black);
+    font-size: 1.1rem;
+    margin-top: 5px;
+}
+
+.cardBox .card .iconBx {
+    font-size: 2rem;
+    color: var(--black);
+}
+
+.cardBox .card:hover {
+    background: var(--blue);
+}
+
+.cardBox .card:hover .numbers,
+.cardBox .card:hover .cardName,
+.cardBox .card:hover .iconBx {
+    color: var(--white);
+}
+
+/* Table Section */
+.table-container {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    /* -webkit-overflow-scrolling: touch;  */
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 18px;
+    text-align: left;
+    min-width: 1000px;
+}
+
+table, th, td {
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    padding: 12px 15px;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+.action-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-edit {
+    background-color: #2196F3;
+    color: white;
+}
+
+.btn-edit:hover {
+    background-color: #0b7dda;
+}
+
+.btn-delete {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #da190b;
+}
+
+i {
+    margin-right: 8px;
+}
+/* Create Product Button */
+.create-product {
+    margin: 20px 0;
+}
+
+.btn-create {
+    background-color: #28a475;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.btn-create:hover {
+    background-color: #1e8561;
+}
+
+/* Product Form Styling */
+.product-form {
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.product-form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+.product-form input, .product-form textarea, .product-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.btn-submit {
+    background-color: #28a475;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-submit:hover {
+    background-color: #1e8561;
+}
+/* Create Order Button */
+.create-order {
+    margin: 20px 0;
+}
+/* Order Form Styling */
+.order-form {
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+ 
+}
+
+.order-form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+.order-form input, .order-form textarea, .order-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+/* Create customer create Button */
+.create-customer {
+    margin: 20px 0;
+}
+/* Order Form Styling */
+.customer-form {
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Added shadow for better separation */
+}
+
+.customer-form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+.customer-form input, .customer-form textarea, .customer-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+/* Create Order Button */
+.create-employee {
+    margin: 20px 0;
+}
+/* Employee Form Styling */
+.employee-form {
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+ 
+}
+
+.employee-form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+.employee-form input, .employee-form textarea, .employee-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.create-vendor {
+    margin: 20px 0;
+}
+/* Vendor Form Styling */
+.vendor-form {
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+ 
+}
+
+.vendor-form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+.vendor-form input, .vendor-form textarea, .vendor-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.create-user {
+    margin: 20px 0;
+}
+/* User Form Styling */
+.user-form {
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+ 
+}
+
+.user-form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+.user-form input, .user-form textarea, .user-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.create-inventory {
+    margin: 20px 0;
+}
+/* Inventory Form Styling */
+.inventory-form {
+    background-color: #f7f7f7;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+ 
+}
+
+.inventory-form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+.inventory-form input, .inventory-form textarea, .inventory-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}

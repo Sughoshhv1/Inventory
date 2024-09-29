@@ -1,0 +1,209 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SG Inventory - Procurement Software</title>
+    <link rel="stylesheet" href="{% static 'css/home_style.css' %}">
+    <!-- Link to Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="{% static '/img/sudeekasha.jpg' %}" alt="SG Inventory Logo">
+        </div>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Features</a></li>
+                <li><a href="#">Pricing</a></li>
+                <li><a href="#">Our Top Clients</a></li>
+                <li><a href="{% url 'login' %}">LogIn/SignIN</a></li>
+            </ul>
+        </nav>
+        <div class="contact-info">
+            <a href=""><i class="fas fa-phone-alt"></i> +91 98866 62010</a>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <main class="main-content">
+        <div class="left-content">
+            <h1>The only procurement software that saves your time</h1>
+            <p>Automate your procurement process, manage inventory, and track expenses with our easy-to-use software.</p>
+            <ul class="benefits-list">
+                <li><i class="fas fa-check"></i> Error-free invoices</li>
+                <li><i class="fas fa-check"></i> Automated GST</li>
+                <li><i class="fas fa-check"></i> Go Live in 7 days</li>
+                <li><i class="fas fa-check"></i> PO Automation</li>
+                <li><i class="fas fa-check"></i> One Click Quotation</li>
+            </ul>
+            <div class="award-badges">
+                <!-- Placeholder images for badges -->
+                <img src="{% static '/img/Batch_icons.webp' %}" alt="Award Badge 1">
+            </div>
+        </div>
+        <div class="right-content">
+            <div class="demo-form">
+                <h2>Get Free Demo</h2>
+                <form>
+                    <label for="name">Name <span>*</span></label>
+                    <input type="text" id="name" name="name" required>
+                    
+                    <label for="email">Work Email <span>*</span></label>
+                    <input type="email" id="email" name="email" required>
+                    
+                    <label for="phone">Mobile Number <span>*</span></label>
+                    <div class="phone-input">
+                        <span>+91</span>
+                        <input type="text" id="phone" name="phone" required>
+                    </div>
+                    
+                    <label for="company">Company Name</label>
+                    <input type="text" id="company" name="company">
+                    
+                    <label for="employees">No. of Employees</label>
+                    <select id="employees" name="employees">
+                        <option value="1-10">1-10</option>
+                        <option value="11-50">11-50</option>
+                        <option value="51-100">51-100</option>
+                        <option value="100+">100+</option>
+                    </select>
+                    
+                    <button type="submit" class="submit-btn">Submit Now</button>
+                </form>
+            </div>
+        </div>
+    </main>
+<hr/>
+        <h1 id="ip">Why Customers Choose us</h1>
+        <div class="container">
+        <div class="feature-card">
+            <i class="fas fa-puzzle-piece icon"></i>
+            <h3>Seamless Integration</h3>
+            <p>Our Software can be easily integrated with any third party software.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-comments icon"></i>
+            <h3>Chat Support</h3>
+            <p>Our Chat support is available to help you with any issue , big or small.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-wallet icon"></i>
+            <h3>Cost-Efficient Solution</h3>
+            <p>Boosts ROI by Optimizing cost.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-bell icon"></i>
+            <h3>Real Time Notifications</h3>
+            <p>Stay updated with real-time notifications about your inventory and orders.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-cloud icon"></i>
+            <h3>Cloud Access</h3>
+            <p>Access your inventory from anywhere with our cloud-based system.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fas fa-mouse-pointer icon"></i>
+            <h3>User-Friendly Interface</h3>
+            <p>Our easy-to-use interface ensures a smooth user experience for everyone.</p>
+        </div>
+        </div>
+    </div>
+<hr/>
+    <h1>Take a Look at Our Software <span class="highlight">Solutions</span></h1>
+    <section class="vendor-management">
+        <div class="content">
+            <h2>Vendor Management</h2>
+            <p>Transform your procurement process with SG Inventory's online procurement solutions. Manage multiple vendors, negotiate for better deals, and enhance supplier relationships with our integrated supplier management software, which includes features like:</p>
+            <ul class="features">
+                <li><i class="fa fa-check-circle"></i> Vendor Assessment</li>
+                <li><i class="fa fa-check-circle"></i> Effortless Vendor Onboarding</li>
+                <li><i class="fa fa-check-circle"></i> Real-time Vendor Screening</li>
+                <li><i class="fa fa-check-circle"></i> Strategic Supplier Partnership</li>
+            </ul>
+        </div>
+        <div class="image">
+            <img src="{% static '/img/ims1.webp' %}" alt="Vendor Management Software Screenshots">
+        </div>
+    </section>
+<hr/>
+    <section class="purchase-order-management">
+        <div class="image">
+            <img src="{% static '/img/ims2.webp' %}" alt="purchase-order Management Software Screenshots">
+        </div>
+        <div class="content">
+            <h2>Purchase Order Management</h2>
+            <p>Enhance your procurement procedures with our cutting-edge e-procurement software, ensuring transparency throughout every stage and effortlessly monitoring purchases in real-time with our purchase order tracking system</p>
+            <ul class="features">
+                <li><i class="fa fa-check-circle"></i> One Click PO</li>
+                <li><i class="fa fa-check-circle"></i> Automatic PO Generation</li>
+                <li><i class="fa fa-check-circle"></i> Flexible Vendor Monitoring</li>
+                <li><i class="fa fa-check-circle"></i> Approve PO via Emails</li>
+            </ul>
+        </div>
+    </section>
+<hr/>
+    <section class="payment-automation">
+        <div class="content">
+            <h2>Payment Automation</h2>
+            <p>Effortlessly manage vendor payments, inventory, and billing with TYASuite's comprehensive billing and inventory management software. Our software offers</p>
+            <ul class="features">
+                <li><i class="fa fa-check-circle"></i> Instant Payment Due Notifications</li>
+                <li><i class="fa fa-check-circle"></i> Multi-invoice Payments</li>
+                <li><i class="fa fa-check-circle"></i> Partial Payments</li>
+                <li><i class="fa fa-check-circle"></i> Purchase-to-Pay Process</li>
+            </ul>
+        </div>
+        <div class="image">
+            <img src="{% static '/img/ims3.webp' %}" alt="payment automation Screenshots">
+        </div>
+    </section>
+<hr/>
+<footer>
+    <div class="footer-section">
+        <div class="main-footer">
+            <div class="footer footerbasis">
+                <h1>SG Inventory</h1>
+            </div>
+            <div class="footer">
+                <h2>Products</h2>
+                <ul>
+                    <li><i class="fas fa-box"></i> Procurement Automation</li>
+                    <li><i class="fas fa-box"></i> Inventory Management</li>
+                    <li><i class="fas fa-box"></i> Expense Tracking</li>
+                    <li><i class="fas fa-box"></i> Supplier Relationship Management</li>
+                </ul>
+            </div>
+            <div class="footer footernews">
+                <h2>Newsletter</h2>
+                <p class="footer-text">Subscribe to receive updates and offers.</p>
+                <div class="news-search">
+                    <input type="email" placeholder="Email Address" id="footer-mail">
+                    <button onclick="successMessage()">Subscribe</button>
+                </div>
+                <h6 id="success"></h6>
+            </div>
+        </div>
+        <div class="copyright">
+            <div class="links">
+                <a href="#">Terms and Conditions</a>
+                <a href="#">Company</a>
+                <a href="#">Issues</a>
+                <a href="#">Admin</a>
+            </div>
+            <p>&copy; 2024 Sudeeksha Technologies - All rights reserved</p>
+        </div>
+    </div>
+</footer>
+
+
+<script>
+    function successMessage() {
+        document.getElementById('success').innerText = 'Subscription successful!';
+    }
+</script>
+</body>
+</html>

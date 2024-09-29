@@ -1,0 +1,224 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+
+{% block title %}Inventory Management{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/exp.css' %}">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+
+  <!-- Inventory Creation Form (initially hidden) -->
+  <div class="create-inventory">
+    <button id="createinventoryBtn" class="btn btn-create"><i class="fas fa-plus"></i>Create Inventory</button>
+  </div>
+
+  <!-- Inventory Creation Form -->
+  <div id="inventoryForm" class="inventory-form" style="display: none;">
+    <label for="vendor_id">Vendor Name:</label>
+    <select id="vendor_id" name="vendor_id" required>
+      {% for vendor in vendor %}
+        <option value="{{ vendor.vend_id }}">{{ vendor.vend_name }}</option>
+      {% endfor %}
+    </select>
+    
+    <label for="product_id">Product Name:</label>
+    <select id="product_id" name="product_id" required>
+      {% for product in products %}
+        <option value="{{ product.pro_id }}">{{ product.category }}  ->  {{ product.name }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" name="quantity" required>
+
+    <label for="date_added">Date Added:</label>
+    <input type="date" id="date_added" name="date_added" required>
+
+    <!-- Submit and reset buttons -->
+    <button type="button" class="btn btn-submit" onclick="add_inventory()">Submit</button>
+    <button type="button" class="btn btn-reset" onclick="resetForm()">Reset</button>
+  </div>
+
+  <!-- Inventory Details Table -->
+  <div class="table-container">
+  <h2 style="text-align: center;">Inventory Details</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Serial Number</th>
+          <th>Vendor Name</th>
+          <th>Category</th>
+          <th>Product Name</th>
+          <th>Quantity</th>
+          <th>Added On</th>
+          <th>Inventory ID</th>
+          <th>Vendor ID</th>
+          <th>Product ID</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in inventory_items %}
+        <tr id="row-{{ item.inven_id }}">
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.vendor.vend_name }}</td>
+          <td>{{ item.product.category }}</td>
+          <td>{{ item.product.name }}</td>
+          <td>{{ item.quantity }}  Kg</td>
+          <td>{{item.created_at}}</td>
+          <td>{{ item.inven_id }}</td>
+          <td>{{ item.vendor.vend_id }}</td>
+          <td>{{ item.product.pro_id }}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-edit" onclick="editRow('{{ item.inven_id }}')"><i class="fas fa-edit"></i> Edit</button>
+              <button class="btn btn-delete" onclick="deleteInventory('{{ item.inven_id }}');"><i class="fas fa-trash-alt"></i> Delete</button>
+            </div>
+          </td>
+        </tr>
+        <tr id="form-{{ item.inven_id }}" class="edit-form" style="display: none;">
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.vendor.vend_name }}</td>
+          <td>{{ item.product.category }}</td>
+          <td>{{ item.product.name }}</td>
+          <td><input type="number" id="equantity{{ item.inven_id }}" value="{{ item.quantity }}"></td>
+          <td><input type="date" id="iupdated{{ item.inven_id }}" value="{{ item.created_att}}"></td>
+          <td>{{ item.inven_id}}</td>
+          <td>
+            <select id="evendor{{ item.inven_id }}">
+                {% for vendor in vendor %}
+                    <option value="{{ vendor.vend_id }}" {% if vendor.vend_id == item.vendor.vend_id %}selected{% endif %}>{{  vendor.vend_id }}</option>
+                {% endfor %}
+            </select>
+          </td>
+          <td>
+              <select id="eproduct{{ item.inven_id }}">
+                  {% for product in products %}
+                      <option value="{{ product.pro_id }}" {% if product.pro_id == item.product.pro_id %}selected{% endif %}>{{ product.pro_id }}</option>
+                  {% endfor %}
+              </select>
+          </td>
+          <td>
+              <div class="action-btns">
+                  <button class="btn btn-edit" onclick='saveChanges("{{ item.inven_id }}");'>Save</button>
+                  <button class="btn btn-delete" onclick="cancelEdit('{{ item.inven_id }}')">Cancel</button>
+              </div>
+          </td>
+      </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Toggle the inventory form visibility
+    document.getElementById("createinventoryBtn").addEventListener("click", function() {
+      var form = document.getElementById("inventoryForm");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    });
+
+    // JavaScript function to submit the inventory form
+    function add_inventory() {
+      var vendor_id = $("#vendor_id").val();
+      var product_id = $("#product_id").val();
+      var quantity = $("#quantity").val();
+      var date_added = $("#date_added").val();
+
+      $.ajax({
+        type: "POST",
+        url: "/create_inventory",
+        data: {
+          "vendor_id": vendor_id,
+          "product_id": product_id,
+          "quantity": quantity,
+          "date_added": date_added,
+        },
+        success: function (data) {
+          if (data.status === "pass") {
+            window.location.reload();  // Reload the page to show updated inventory details
+          } else {
+            alert(data.message);
+          }
+        },
+        error: function (error) {
+          alert("An error occurred.");
+        }
+      });
+    }
+
+    function saveChanges(inven_id) {
+      var quantity = $('#equantity' + inven_id).val();
+      var product_id = $('#eproduct' + inven_id).val();
+      var vendor_id = $('#evendor' + inven_id).val();
+      var inv_date = $('#iupdated' + inven_id).val();
+
+      if (confirm('Are you sure you want to edit this inventory item?')) {
+          $.ajax({
+              type: 'POST',
+              url: "{% url 'edit_inventory' %}",
+              data: {
+                  "id": inven_id,
+                  "quantity": quantity,
+                  "product_id": product_id,
+                  "inv_date":inv_date,
+                  "vendor_id":vendor_id
+              },
+              success: function (data) {
+                  if (data.status === "success") {
+                      window.location.reload();  // Reload to see the updated data
+                  }
+              },
+              error: function (xhr, status, error) {
+                  console.error("Error updating inventory:", status, error);
+                  alert("An error occurred while updating the inventory. Please try again.");
+              }
+          });
+      }
+  }
+
+    function deleteInventory(item_id) {
+      $.ajax({
+        type: "POST",
+        url: "{% url 'delete_inventory' %}",
+        data: {
+          "item_id": item_id,
+        },
+        success: function() {
+          window.location.reload();
+        }
+      });
+    }
+    
+    function editRow(id) {
+        $('#row-' + id).hide();
+        $('#form-' + id).show();
+    }
+
+    function cancelEdit(id) {
+        $('#form-' + id).hide();
+        $('#row-' + id).show();
+    }
+
+    // JavaScript function to reset the form
+    function resetForm() {
+       document.getElementById("quantity").value = "";
+       document.getElementById("vendor_id").value = "";
+       document.getElementById("product_id").value = "";
+       document.getElementById("date_added").value = "";
+     
+   }
+
+
+  </script>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/exp.css' %}">
+    <link href='https://unpkg.com/boxicons@2.1.1/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Bar -->
+        <div class="navigation">
+            <div class="user-info">
+                <div class="profile-pic"></div>
+                <span class="user-name">{{currentuser}}</span>
+            </div>
+            <ul>
+                <li><a href="{% url 'vendor_uservend' %}" ><button><span class="icon"><i class='bx bx-user'></i></span><span class="title">Profile</span></button></a></li>
+                <li><a href="{% url 'u_inventoryvend' %}" ><button><span class="icon"><i class='bx bx-user'></i></span><span class="title">Inventory</span></button></a></li>
+                <li class="signout"><a href="{% url 'landing' %}" ><button><span class="icon"><i class='bx bx-log-out'></i></span><span class="title">Sign Out</span></button></a></li>
+            </ul>
+        </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

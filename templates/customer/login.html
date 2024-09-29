@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Form </title>
+  
+  <link rel="stylesheet" href="{% static 'css/style2.css' %}">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+  <div class="wrapper">
+    <form action="">
+      <h1>Login</h1>
+      <div class="input-box">
+        <input type="text" placeholder="Username"  id="ip2"   required>
+        <i class='bx bxs-user'></i>
+      </div>
+      <div class="input-box">
+        <input type="password" placeholder="Password" id="ip1"  required>
+        <i class='bx bxs-lock-alt' ></i>
+      </div>
+
+      <div class="remember-forgot">
+        <label><input type="checkbox">Remember Me</label>
+        <a href="#">Forgot Password</a>
+      </div>
+      <div class="register-link">
+        <p>Dont have an account? <a href="{% url 'signup' %}">Register</a></p>
+      </div>
+    </form>
+    <button type="submit" class="btn" onclick="check()"   >Login</button>
+  </div>
+  <!-- <script src="{% static '/javascript/login.js' %}"></script> -->
+   <script>
+  //   function check() {
+  //     var user = $("#ip2").val(); 
+  //     var pass = $("#ip1").val(); 
+
+  //   $.ajax({
+  //     type: "POST",
+  //     url: "/login_check/",
+  //     data: {
+  //       "username": user,
+  //       "password": pass
+  //     },
+  //     success: function (data) {
+  //       if (data["status"] == "pass") {
+  //         alert("Login Successful");
+  //         window.location.replace("/userview");
+  //       } else {
+  //         alert("Login Failed");
+  //       }
+  //       console.log("Response: ", data);
+  //     }
+  //    }
+  //   );
+  // }
+  function check()
+        {
+            var name = $('#ip2').val();
+            var passd = $('#ip1').val();
+            
+            $.ajax({
+                type:'POST',
+                url:'/login_check/',
+                data:{"name":name, "password":passd},
+                success: function(data){
+                   if (data["status"] == "pass")
+                   {
+                    console.log("Welcome ", data["name"]);
+                    if(data["role"] == "employee")
+                    {
+                        window.location.replace("/employee_user11")
+                    }
+                    else if(data["role"] == "customer")
+                    {
+                        window.location.replace("/customer_usercust")
+                    }
+                    else if(data["role"] == "admin")
+                    {
+                        window.location.replace("/userview")
+                    }
+                    else if(data["role"] == "vendor")
+                    {
+                        window.location.replace("/vendor_uservend")
+                    }
+                   }
+                   else
+                   {
+                    alert("login failed");
+                   }
+                }
+            });
+          }
+   </script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+{% extends 'employee/base.html' %}
+{% load static %}
+
+{% block title %}User Data{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Data</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/exp.css' %}">
+</head>
+<body>
+  <!-- Button to trigger product creation form -->
+<div class="create-customer">
+  <button id="createcustomerBtn" class="btn btn-create"><i class="fas fa-plus"></i> Create Customer</button>
+</div>
+
+<!-- Customer Creation Form (initially hidden) -->
+<div id="customerForm" class="customer-form" style="display: none;">
+  <label for="user">Customer Name:</label>
+  <input type="text" id="user" name="user" required>
+  
+  <label for="spass">Password :</label>
+  <input type="text" id="spass" name="spass" required>
+  
+  <label for="smail">Email:</label>
+  <input type="email" id="smail" name="smail" required>
+
+  <label for="sphone">Phone Number:</label>
+  <input type="tel" id="sphone" name="sphone" required>
+  
+  <label for="usertype">User Type:</label>
+  <select id="usertype" name="usertype" required disabled>
+    <option value="customer">Customer</option>
+  </select>
+  
+  <!-- Buttons for submit and reset -->
+  <button type="button" class="btn btn-submit" onclick="sign()">Submit</button>
+</div>
+<div class="table-container">
+  <h2 style="text-align: center;">Customers Details</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Serial number</th>
+        <th>Customer Name</th>
+        <th>Customer Email ID</th>
+        <th>Customer password</th>
+        <th>Customer Phone Number</th>
+        <th>User Type</th>
+        <th>User ID</th>
+        <th>Cutomer ID</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for obj in userdata %}
+        <tr id="row-{{ obj.userid.user_id }}">
+          <td>{{forloop.counter}}</td>
+          <td>{{ obj.cust_name }}</td>
+          <td>{{ obj.cust_email }}</td>
+          <td>{{ obj.cust_pass }}</td>
+          <td>{{ obj.cust_number }}</td>
+          <td>{{ obj.userid.user_typee }}</td>
+          <td>{{ obj.userid.user_id  }}</td>
+          <td>{{ obj.cust_id }}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-edit" onclick="editRow('{{obj.userid.user_id}}')"><i class="fas fa-edit"></i>Edit</button>
+              <button class="btn btn-delete" onclick="deleterecord('{{ obj.userid.user_id }}');"><i class="fas fa-trash-alt"></i>Delete</button>
+            </div>
+          </td>
+        </tr>
+        <tr id="form-{{ obj.userid.user_id}}" class="edit-form" style="display: none;">
+          <td>{{forloop.counter}}</td>
+          <td><input type="text" id="fname{{ obj.userid.user_id }}" value="{{ obj.userid.user_name }}"></td>
+          <td><input type="email" id="femail{{ obj.userid.user_id }}" value="{{ obj.userid.user_email }}"></td>
+          <td><input type="text" id="fpass{{ obj.userid.user_id }}" value="{{ obj.userid.user_pass }}"></td>
+          <td><input type="tel" id="fuser{{ obj.userid.user_id}}" value="{{ obj.userid.user_number }}"></td>
+          <td><input type="text" id="ftype{{ obj.userid.user_id }}" value="{{ obj.userid.user_typee}}"></td>
+          <td>{{ obj.userid.user_id  }}</td>
+          <td>{{ obj.cust_id }}</td>
+          <td>
+          <div class="action-btns">
+          <button class="btn btn-edit" onclick='saveChanges("{{  obj.userid.user_id }}");'>Save</button>
+          <button class="btn btn-delete" onclick="cancelEdit('{{ obj.userid.user_id }}')">Cancel</button>
+          </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+     // Function to toggle the product form visibility
+     document.getElementById("createcustomerBtn").addEventListener("click", function() {
+        var form = document.getElementById("customerForm");
+        if (form.style.display === "none") {
+            form.style.display = "block";
+        } else {
+            form.style.display = "none";
+        }
+    });
+
+    function saveChanges(user_id)
+        {
+            var fullname = $('#fname'+user_id).val();
+            var email = $('#femail'+user_id).val();
+            var password = $('#fpass'+user_id).val();
+            var type = $('#ftype'+user_id).val();
+            var number = $('#fuser'+user_id).val();
+
+            if (confirm('Are you sure you want to edit this user?')) {
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'edit_user' %}",
+                    data: { "id": user_id, "fullname": fullname, "email": email, "password": password, "type": type, "number":number },
+                    success: function (data) {
+                        if (data) {
+                            window.location.replace('/customer_user');
+                        }
+                    }
+                });
+            }
+        }
+
+     function sign() {
+      var name = $("#user").val();
+      var pass = $("#spass").val(); 
+      var mail = $("#smail").val(); 
+      var phone = $("#sphone").val();
+      var type = $("#usertype").val();
+      console.log(pass);
+
+    $.ajax({
+      type: "POST",
+      url: "{% url 'create' %}",
+      data: {
+        "username": name,
+        "password": pass,
+        "email":mail,
+        "phone":phone,
+        "usertype":type,
+      },
+      success: function (data) {
+        alert("success");
+        window.location.reload();
+      }
+     }
+    );
+  }
+    function deleterecord(user_id)
+    {
+      console.log(user_id);
+      $.ajax({
+      type: "POST",
+      url: "{% url 'delete_user' %}",
+      data: {
+        "user_id": user_id
+      },
+      success: function (data) {
+
+        window.location.replace("/customer_user");
+      }
+     }
+    );
+    }
+
+    function editRow(user_id) {
+            $('#row-' + user_id).hide();
+            $('#form-' + user_id).show();
+        }
+
+    function cancelEdit(user_id) {
+            $('#form-' + user_id).hide();
+            $('#row-' + user_id).show();
+    }
+
+  </script>
+{% endblock %}
+</body>
+</html>
