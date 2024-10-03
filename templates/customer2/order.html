@@ -21,18 +21,41 @@
     <button id="createorderBtn" class="btn btn-create"><i class="fas fa-plus"></i> Create Order</button>
   </div>
 
+  <!-- Products Available Section -->
+  <h2 style="text-align: center; margin-top: 30px;">Products Available</h2>
+  <div class="products-container">
+  {% for product in products %}
+  <div class="product-card">
+    <h3>{{ product.name }}</h3>
+    <p>Product ID: {{ product.pro_id }}</p>
+    <p>Category : {{product.category}}</p>
+    {% if product.quantiy <= 0 %}
+    <p>Quantity: Out of Stock</p>
+    {% else %}
+    <p>Quantity: {{ product.quantiy }} Kg</p>
+    {% endif %}
+  </div>
+  {% empty %}
+    <p style="text-align: center;">No products available</p>
+  {% endfor %}
+</div>
+
   <!-- Order Creation Form -->
   <div id="orderForm" class="order-form" style="display: none;">
     
     <label for="customer_name">Customer Name:</label>
     <input type="text" id="customer_name" name="customer_name" value="{{ currentuser }}" readonly>
     
-    <label for="product_id">Product Name:</label>
+    <!-- <label for="product_id">Product Name:</label>
     <select id="product_id" name="product_id" required>
       {% for product in products %}
         <option value="{{ product.pro_id }}">{{ product.category }}  ->  {{ product.name }}</option>
       {% endfor %}
-    </select>
+    </select> -->
+    <label for="product_search">Product Name:</label>
+      <input type="text" id="product_search" class="form-control" placeholder="Search for a product" autocomplete="off" required>
+      <input type="hidden" id="product_id" name="product_id"> <!-- Hidden input to store the product ID -->
+      <div id="product_results"></div>  <!-- Live search results will appear here -->
 
     <label for="order_created">Order Created on:</label>
     <input type="date" id="order_created" name="order_created" required>
@@ -105,6 +128,10 @@
               </div>
           </td>
       </tr>
+      {% empty %}
+          <tr>
+            <td colspan="10" style="text-align: center;">No Orders Yet</td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -120,11 +147,55 @@
       }
   });
 
+  // Live search for products using AJAX
+  $('#product_search').on('input', function() {
+    var search_term = $(this).val();
+    if (search_term.length > 2) {  // Trigger search after 2 characters
+      $.ajax({
+        url: "{% url 'search_products' %}",
+        data: {'term': search_term},
+        success: function(data) {
+          if (data.length > 0) {
+            $('#product_results').empty().show();  // Clear previous results and show the container
+            data.forEach(function(product) {
+              $('#product_results').append('<div data-id="' + product.id + '" class="product-item">' + product.name + '</div>');
+            });
+          } else {
+            $('#product_results').hide();  // Hide the results container if no matches
+          }
+        }
+      });
+    } else {
+      $('#product_results').hide();  // Hide the results if input is less than 2 characters
+    }
+  });
+
+// Handle product selection from the live search
+$(document).on('click', '.product-item', function() {
+  var product_name = $(this).text();
+  var product_id = $(this).data('id');  // Get the product ID from the data attribute
+
+  $('#product_search').val(product_name);  // Set the search box to the selected product name
+  $('#product_id').val(product_id);  // Store the product ID in the hidden input
+  $('#product_results').hide();  // Hide the search results
+});
+
     // JavaScript function to submit the order form
     function add_order() {
       var product_id = $("#product_id").val();
       var order_created = $("#order_created").val();
       var order_qt = $("#order_qt").val();
+
+    // this is to validate that the field is mandatory to be filled
+    if ( !product_search || !order_created || !order_qt) {
+      alert("All fields are required!");
+      return;
+  }
+  
+  if (order_qt <= 0) {
+    alert("Quantity must be greater than zero!");
+    return;
+  }
 
       $.ajax({
         type: "POST",
@@ -207,12 +278,10 @@
 
     // JavaScript function to reset the form
     function resetForm() {
-       document.getElementById("product_id").value = "";
+       document.getElementById("product_search").value = "";
        document.getElementById("order_created").value = "";
        document.getElementById("order_qt").value = "";
-     
    }
-
   </script>
 </body>
 </html>

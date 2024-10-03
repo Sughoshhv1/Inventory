@@ -105,6 +105,10 @@
               </div>
           </td>
       </tr>
+      {% empty %}
+          <tr>
+            <td colspan="10" style="text-align: center;">No Items added Yet</td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -122,6 +126,15 @@
       var product_id = $("#product_id").val();
       var quantity = $("#quantity").val();
       var date_added = $("#date_added").val();
+
+      if (!vendor_id || !product_id || !quantity || !date_added) {
+        alert("All fields are required!");
+        return;
+    }
+    if (quantity <= 0) {
+        alert("Quantity must be greater than zero!");
+        return;
+    }
 
       $.ajax({
         type: "POST",

@@ -34,7 +34,7 @@
   <input type="tel" id="sphone" name="sphone" required>
   
   <label for="usertype">User Type:</label>
-  <select id="usertype" name="usertype" required disabled>
+  <select id="usertype" name="usertype" disabled>
     <option value="customer">Customer</option>
   </select>
   
@@ -91,6 +91,10 @@
           </div>
           </td>
         </tr>
+        {% empty %}
+          <tr>
+            <td colspan="9" style="text-align: center;">No Customers Yet</td>
+          </tr>
       {% endfor %}
     </tbody>
   </table>
@@ -128,31 +132,63 @@
             }
         }
 
-     function sign() {
-      var name = $("#user").val();
-      var pass = $("#spass").val(); 
-      var mail = $("#smail").val(); 
-      var phone = $("#sphone").val();
-      var type = $("#usertype").val();
-      console.log(pass);
+    function sign() {
+    var name = $("#user").val();
+    var pass = $("#spass").val(); 
+    var mail = $("#smail").val(); 
+    var phone = $("#sphone").val();
+    var type = $("#usertype").val();
 
+    // Validate required fields
+    if (!name) {
+        alert("Please enter a customer name.");
+        return; // Stop the function if validation fails
+    }
+    if (!pass) {
+        alert("Please enter a password.");
+        return;
+    }
+    if (!mail) {
+        alert("Please enter an email.");
+        return;
+    }
+    if (!phone) {
+        alert("Please enter a phone number.");
+        return;
+    }
+
+    var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailPattern.test(mail)) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+
+    // Validate phone number format (example: allowing 10-digit numbers)
+    var phonePattern = /^\d{10}$/; // Adjust the regex pattern as needed
+    if (!phonePattern.test(phone)) {
+        alert("Please enter a valid phone number (10 digits).");
+        return;
+    }
+
+
+    // If all validations pass, make the AJAX call
     $.ajax({
-      type: "POST",
-      url: "{% url 'create' %}",
-      data: {
-        "username": name,
-        "password": pass,
-        "email":mail,
-        "phone":phone,
-        "usertype":type,
-      },
-      success: function (data) {
-        alert("success");
-        window.location.reload();
-      }
-     }
-    );
-  }
+        type: "POST",
+        url: "{% url 'create' %}",
+        data: {
+            "username": name,
+            "password": pass,
+            "email": mail,
+            "phone": phone,
+            "usertype": type,
+        },
+        success: function (data) {
+            alert("Customer created successfully!");
+            window.location.reload();
+        }
+    });
+}
+
     function deleterecord(user_id)
     {
       console.log(user_id);
