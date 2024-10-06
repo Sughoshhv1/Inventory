@@ -90,6 +90,10 @@
         </div>
         </td>
       </tr>
+      {% empty %}
+          <tr>
+            <td colspan="8" style="text-align: center;">No Users Yet</td>
+          </tr>
       {% endfor %}
     </tbody>
   </table>
@@ -134,6 +138,40 @@
       var phone = $("#sphone").val();
       var type = $("#usertype").val();
       console.log(pass);
+
+    if (!name) {
+        alert("Please enter name.");
+        return; // Stop the function if validation fails
+    }
+    if (!pass) {
+        alert("Please enter a password.");
+        return;
+    }
+    if (!mail) {
+        alert("Please enter an email.");
+        return;
+    }
+    if (!phone) {
+        alert("Please enter a phone number.");
+        return;
+    }
+    if (!type) {
+      alert("Please select a user type.");
+      return;
+  }
+
+    var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailPattern.test(mail)) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+
+    // Validate phone number format (example: allowing 10-digit numbers)
+    var phonePattern = /^\d{10}$/; // Adjust the regex pattern as needed
+    if (!phonePattern.test(phone)) {
+        alert("Please enter a valid phone number (10 digits).");
+        return;
+    }
 
     $.ajax({
       type: "POST",

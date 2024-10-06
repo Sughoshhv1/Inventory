@@ -33,11 +33,13 @@ urlpatterns = [
     path('CreateOrdercust/',views.CreateOrdercust.as_view(),name='CreateOrdercust'),
     path('edit_ordercust/', views.edit_ordercust.as_view(), name='edit_ordercust'),
     path('customer_usercust/',views.customer_usercust.as_view(),name='customer_usercust'),
+    path('u_orderhistory/', views.u_orderhistory.as_view(), name='u_orderhistory'),
 
     path('create_inventoryvend/',views.create_inventoryvend.as_view(),name='create_inventoryvend'),
     path('u_inventoryvend/', views.u_inventoryvend.as_view(), name='u_inventoryvend'),
     path('vendor_uservend/',views.vendor_uservend.as_view(),name='vendor_uservend'),
     path('edit_inventoryvend/', views.edit_inventoryvend.as_view(), name='edit_inventoryvend'),
+    path('u_inventoryvendhistory/', views.u_inventoryvendhistory.as_view(), name='u_inventoryvendhistory'),
 
     path('employee_user11/', views.employee_user11.as_view(), name='employee_user11'),
     path('vendor_user11/', views.vendor_user11.as_view(), name='vendor_user11'),
@@ -45,5 +47,7 @@ urlpatterns = [
     path('u_product11/', views.u_product11.as_view(), name='u_product11'),
     path('u_order11/', views.u_order11.as_view(), name='u_order11'),
     path('u_inventory11/', views.u_inventory11.as_view(), name='u_inventory11'),
+
+    path('search_products/', views.ProductSearchView.as_view(), name='search_products'),
     
 ]

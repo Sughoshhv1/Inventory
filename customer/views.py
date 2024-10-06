@@ -141,6 +141,9 @@ class CreateOrder(APIView):
             print(f"Order Created: {order_created}")
             print(f"Order Quantity: {order_qt}")
 
+            if int(order_qt) <= 0:
+                return JsonResponse({'status': 'fail', 'message': 'Quantity must be greater than zero.'})
+
             # Validate the data
             if not customer_id or not product_id or not order_created or not order_qt:
                 return JsonResponse({"status": "fail", "message": "All fields are required"})
@@ -188,7 +191,7 @@ class CreateOrder(APIView):
         except Exception as e:
             # Log the exception (optional) and return a generic error message
             print(f"An error occurred: {e}")
-            return JsonResponse({"status": "fail", "message": "An unexpected error occurred"}, status=500)
+            return JsonResponse({"status": "fail", "message": "An unexpected error occurred"})
          
 
 class create_inventory(APIView):
@@ -198,26 +201,29 @@ class create_inventory(APIView):
         quantity = request.data.get("quantity")
         date_added = request.data.get("date_added")
 
+        if int(quantity) <= 0:
+            return JsonResponse({'status': 'fail', 'message': 'Quantity must be greater than zero.'})
+
         # Validate the data
         if not vendor_id or not product_id or not quantity:
-            return JsonResponse({"status": "fail", "message": "Vendor, Product, and Quantity are required"}, status=400)
+            return JsonResponse({"status": "fail", "message": "Vendor, Product, and Quantity are required"})
 
         # Fetch the vendor and product from the database
         try:
             vendor = Vendor.objects.get(vend_id=vendor_id)
         except Vendor.DoesNotExist:
-            return JsonResponse({"status": "fail", "message": "Vendor not found"}, status=400)
+            return JsonResponse({"status": "fail", "message": "Vendor not found"})
 
         try:
             product = Product.objects.get(pro_id=product_id)
         except Product.DoesNotExist:
-            return JsonResponse({"status": "fail", "message": "Product not found"}, status=400)
+            return JsonResponse({"status": "fail", "message": "Product not found"})
 
         # Convert the quantity input to Decimal
         try:
             quantity = Decimal(quantity)
         except InvalidOperation:
-            return JsonResponse({"status": "fail", "message": "Invalid quantity format"}, status=400)
+            return JsonResponse({"status": "fail", "message": "Invalid quantity format"})
 
         # Create a new inventory item
         inventory_item = InventoryItem(
@@ -263,7 +269,7 @@ class delete_order(APIView):
         try:
             order = Order.objects.get(order_id=order_id)
         except Order.DoesNotExist:
-            return JsonResponse({"status": "fail", "message": "Order not found"}, status=400)
+            return JsonResponse({"status": "fail", "message": "Order not found"})
 
         # Access the associated product
         product = order.productfk
@@ -611,6 +617,28 @@ class login_check_ajax(APIView):
             return JsonResponse({"status":"fail"})
 # from here customer page operations starts
 
+class u_orderhistory(TemplateView):
+    template_name = "customer2/orderhistory.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Existing data fetching
+        user_data = Order.objects.all()
+        current_user = self.request.session.get("user_data", None)
+
+        # Fetch customers and products for dropdowns
+        order_data = Order.objects.all()
+
+        # Update the context
+        context.update({
+            "userdata": user_data,
+            "orders": order_data,
+            "currentuser" :current_user
+        })
+
+        return context
+
 class u1_order(TemplateView):
     template_name = "customer2/order.html"
 
@@ -664,6 +692,9 @@ class CreateOrdercust(APIView):
             print(f"Product ID: {product_id}")
             print(f"Order Created: {order_created}")
             print(f"Order Quantity: {order_qt}")
+
+            if int(order_qt) <= 0:
+                return JsonResponse({'status': 'fail', 'message': 'Quantity must be greater than zero.'})
 
             # Validate the data
             if not current_user_id or not product_id or not order_created or not order_qt:
@@ -794,6 +825,9 @@ class create_inventoryvend(APIView):
         quantity = request.data.get("quantity")
         date_added = request.data.get("date_added")
 
+        if int(quantity) <= 0:
+            return JsonResponse({'status': 'fail', 'message': 'Quantity must be greater than zero.'})
+
         # Validate the data
         if not vendor_id or not product_id or not quantity:
             return JsonResponse({"status": "fail", "message": "Vendor, Product, and Quantity are required"}, status=400)
@@ -862,6 +896,27 @@ class u_inventoryvend(TemplateView):
             "product_count": product_count,
             "vendor": vendor,
             "products": products,
+            "currentuser" :current_user
+        })
+
+        return context
+    
+class u_inventoryvendhistory(TemplateView):
+    template_name = "vendor/invhistory.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        current_user_id = self.request.session.get("user_id")
+
+        # Fetch orders only for the current user using the correct ForeignKey field names
+        user_orders = InventoryItem.objects.filter(vendor__userid__user_id=current_user_id)
+
+        current_user = self.request.session.get("user_data", None)
+
+        # Updating context
+        context.update({
+            "userdata": user_orders,
             "currentuser" :current_user
         })
 
@@ -1122,3 +1177,12 @@ class u_inventory11(TemplateView):
 
         return context
 
+# code to search for products in customer page
+from django.views import View
+
+class ProductSearchView(View):
+    def get(self, request, *args, **kwargs):
+        search_term = request.GET.get('term', '')
+        products = Product.objects.filter(name__icontains=search_term)
+        product_list = [{"id": product.pro_id, "name": product.name} for product in products]
+        return JsonResponse(product_list, safe=False)
