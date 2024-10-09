@@ -15,7 +15,7 @@ urlpatterns = [
     path('vendor_user/',views.vendor_user.as_view(),name='vendor_user'),
     path('customer_user/',views.customer_user.as_view(),name='customer_user'),
     path('employee_user/',views.employee_user.as_view(),name='employee_user'),
-    path('create_product/',views.create_product.as_view(),name='create_product'),
+    path('create_product/',views.CreateProduct.as_view(),name='create_product'),
     path('u_product/',views.u_product.as_view(),name='u_product'),
     path('delete_product/',views.delete_product.as_view(),name='delete_product'),
     path('create_order/',views.CreateOrder.as_view(),name='create_order'),
@@ -49,5 +49,7 @@ urlpatterns = [
     path('u_inventory11/', views.u_inventory11.as_view(), name='u_inventory11'),
 
     path('search_products/', views.ProductSearchView.as_view(), name='search_products'),
+    path('get_product_cost/', views.GetProductCost.as_view(), name='get_product_cost'),
+    path('confirm_payment/', views.confirm_payment, name='confirm_payment'),
     
 ]

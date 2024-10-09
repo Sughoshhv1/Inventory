@@ -23,31 +23,35 @@
 <div id="productForm" class="product-form" style="display: none;">
   <label for="product_cat">Category</label>
   <select id="product_cat" required>
-      <option value="" disabled selected>Categories</option> <!-- Keep it disabled but with value empty -->
+      <option value="" disabled selected>Categories</option>
       <option value="Fruits">Fruits</option>
       <option value="Vegetables">Vegetables</option>
       <option value="Essentials">Essentials</option>
   </select>
   
-    <label for="product_name">Product Name:</label>
-    <input type="text" id="product_name" name="product_name" required>
-    
-    <label for="product_total">Quantity:</label>
-    <input type="number" id="product_total" name="product_total" required>
-    
-    <button type="button" class="btn btn-submit" onclick="add()">Submit</button>
-    <button type="button" class="btn btn-reset" onclick="resetForm()">Reset</button>
+  <label for="product_name">Product Name:</label>
+  <input type="text" id="product_name" name="product_name" required>
+  
+  <label for="product_total">Quantity:</label>
+  <input type="number" id="product_total" name="product_total" required>
+  
+  <label for="product_cost">Cost Per Item:</label>
+  <input type="number" id="product_cost" name="product_cost" required>
+  
+  <button type="button" class="btn btn-submit" onclick="add()">Submit</button>
+  <button type="button" class="btn btn-reset" onclick="resetForm()">Reset</button>
 </div>
 
 {% for category, products in categorized_products.items %}
   <div class="table-container">
     <h2 style="text-align: center;color:rgba(0, 0, 0,0.6)">{{ category }} :</h2>
-    <table>
+    <table style="text-align: center;">
       <thead>
         <tr>
           <th>Serial number</th>
           <th>Product Name</th>
           <th>Quantity</th>
+          <th>Cost Per Item</th> <!-- New column for cost -->
           <th>Product ID</th>
           <th>Actions</th>
         </tr>
@@ -57,7 +61,8 @@
           <tr id="row-{{ product.pro_id }}">
             <td>{{ forloop.counter }}</td>
             <td>{{ product.name }}</td>
-            <td>{{ product.quantiy }} Kg</td>
+            <td>{{ product.quantity }} Kg</td>
+            <td>{{ product.cost_per_item }} Rupee</td>  <!-- Display cost -->
             <td>{{ product.pro_id }}</td>
             <td>
               <div class="action-btns">
@@ -69,7 +74,8 @@
           <tr id="form-{{ product.pro_id }}" class="edit-form" style="display: none;">
             <td>{{ forloop.counter }}</td>
             <td><input type="text" id="pname{{ product.pro_id }}" value="{{ product.name }}"></td>
-            <td><input type="number" id="pquantity{{ product.pro_id }}" value="{{ product.quantiy }}"></td>
+            <td><input type="number" id="pquantity{{ product.pro_id }}" value="{{ product.quantity }}"></td>
+            <td>{{ product.cost_per_item }} Rupee</td>  <!-- Display cost -->
             <td>{{ product.pro_id }}</td>
             <td>
               <div class="action-btns">
@@ -116,6 +122,7 @@ function add() {
   var product_name = $("#product_name").val();
   var product_qt = $("#product_total").val();
   var product_cat = $("#product_cat").val();
+  var product_cost = $("#product_cost").val();  // New field for cost
 
   // Validate that a category is selected
   if (!product_cat) {
@@ -124,33 +131,40 @@ function add() {
   }
 
   // Validate other fields as needed
-  if (!product_name || !product_qt) {
+  if (!product_name || !product_qt || !product_cost) {
       alert("Please fill out all fields.");
       return; // Stop the function execution
   }
 
   document.getElementById("productForm").style.display = "none";
 
-  alert("Product added!");
-
   $.ajax({
       type: "POST",
-      url: "{% url 'create_product' %}",
+      url: "/create_product/",
       data: {
           "product_name": product_name,
           "product_qt": product_qt,
+          "product_cost": product_cost,  // Include the cost in the request
           "product_cat": product_cat
       },
-      success: function (data) {
-          window.location.replace("/u_product");
+      success: function(data) {
+          if (data.status === "success") {
+              alert("Product added successfully!");
+              window.location.replace("/u_product");
+          } else {
+              alert(data.message); // Display the error message
+              document.getElementById("productForm").style.display = "block"; // Show the form again
+          }
       }
   });
 }
+
 
 function resetForm() {
     document.getElementById("product_name").value = "";
     document.getElementById("product_total").value = "";
     document.getElementById("product_cat").value = "";
+    document.getElementById("product_cost").value = "";
 }
 
 function deleteProduct(pro_id) {

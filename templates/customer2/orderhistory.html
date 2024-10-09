@@ -1,7 +1,7 @@
 {% extends 'customer2/base.html' %}
 {% load static %}
 
-{% block title %}Product Management{% endblock %}
+{% block title %}Order History{% endblock %}
 
 {% block content %}
 <!DOCTYPE html>
@@ -9,43 +9,171 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Management</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="{% static 'css/exp.css' %}">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script>
+    function openPaymentModal(orderDate, totalCost, orderId, rowElement) {
+  $('#paymentModal').show();
+  $('#modalTotalCost').text(totalCost);
+  $('#modalDate').text(orderDate);
+  $('.payment-option').hide(); // Hide any previous selected options
+  $('#payButton').off('click').on('click', function() {
+    const phoneNumber = $('#phoneNumber').val();
+    if (phoneNumber.length === 10) {
+      $.ajax({
+        url: "{% url 'confirm_payment' %}",
+        type: "POST",
+        data: {
+          'order_id': orderId,
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+          if (response.status === 'success') {
+            alert("Payment Done!");
+            $(rowElement).find('.pay-button').prop('disabled', true).addClass('completed').text('Payment Done');
+            $(rowElement).find('.status').text('Payment Done');
+            $('#paymentModal').hide();
+          } else {
+            alert("Payment failed. Please try again.");
+          }
+        }
+      });
+    } else {
+      alert("Please enter a valid 10-digit phone number.");
+    }
+  });
+}
+
+    $(document).ready(function() {
+        // Payment button clicked
+        $('.pay-button').click(function() {
+            if ($(this).hasClass('completed')) {
+                alert("Payment already done.");
+                return;
+            }
+
+            const rowElement = $(this).closest('tr');
+            const orderDate = rowElement.find('td').first().text();
+            const totalCost = rowElement.find('.total-cost').text();
+            const orderId = $(this).data('order-id'); // Get the order ID
+            
+            // Open the payment modal
+            openPaymentModal(orderDate, totalCost, orderId, rowElement);
+        });
+
+        // Close the modal when Close button is clicked
+        $('#closeModal').click(function() {
+            $('#paymentModal').hide();
+        });
+
+        // Handle different payment methods
+        $('#paymentMethod').change(function() {
+            const selectedMethod = $(this).val();
+            $('.payment-option').hide();
+            if (selectedMethod === 'gpay') {
+                $('#gpayOption').show();
+            } else if (selectedMethod === 'phonepay') {
+                $('#phonepayOption').show();
+            } else if (selectedMethod === 'razorpay') {
+                $('#razorpayOption').show();
+            } else if (selectedMethod === 'card') {
+                $('#cardOption').show();
+            }
+        });
+    });
+  </script>
 </head>
 <body>
   <!-- Order History Table -->
   <div class="table-container">
     <h2 style="text-align: center;">Order History</h2>
-    <table>
+    <table style="text-align: center;">
       <thead>
         <tr>
+          <th>Date</th>
           <th>Serial Number</th>
-          <th>Customer Name</th>
           <th>Category</th>
           <th>Product Name</th>
           <th>Quantity</th>
-          <th>Created On</th>
+          <th>Individual Item Cost</th>
+          <th>Total Cost (for the day)</th>
+          <th>Status</th>
+          <th>Pay</th>
         </tr>
       </thead>
       <tbody>
-        {% for order in orders %}
-        <tr id="row-{{ order.order_id }}">
-          <td>{{forloop.counter}}</td>
-          <td>{{ order.customerfk.cust_name }}</td>
-          <td>{{ order.productfk.category }}</td>
-          <td>{{ order.productfk.name }}</td>
-          <td>{{ order.total_qt }}  Kg</td>
-          <td>{{order.created_att}}</td>
-        </tr>
-        {% empty %}
-          <tr>
-            <td colspan="6" style="text-align: center;">No Orders Yet</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        {% for summary in order_summary|dictsort:"date" %}
+              <tr>
+                <td rowspan="{{ summary.orders|length }}">{{ summary.date }}</td>
+                {% for order in summary.orders %}
+                <td>{{ forloop.counter }}</td>
+                <td>{{ order.productfk.category }}</td>
+                <td>{{ order.productfk.name }}</td>
+                <td>{{ order.total_qt }} Kg</td>
+                <td>{{ order.total_cost }}</td>
+
+                {% if forloop.first %}
+                <td rowspan="{{ summary.orders|length }}" class="total-cost">{{ summary.total_cost }}</td>
+                <td rowspan="{{ summary.orders|length }}" class="pending-cost">
+                  {% if summary.pending_cost > 0 %}
+                  Pay: {{ summary.pending_cost }}
+                  {% else %}
+                  Paid in Full
+                  {% endif %}
+                </td>
+                <td rowspan="{{ summary.orders|length }}">
+                  {% if summary.pending_cost > 0 %}
+                    <button class="pay-button" data-order-id="{{ order.order_id }}">Pay</button>
+                  {% else %}
+                    <button class="pay-button completed">Payment Done</button>
+                  {% endif %}
+                </td>
+                {% endif %}
+                </tr>
+              {% endfor %}
+              {% endfor %}
+        </tbody>
+        </table>
+      </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal">
+    <div>
+      <div class="modal-header">
+        <h2>Payment for <span id="modalDate"></span></h2>
+      </div>
+      <p>Total Cost: <span id="modalTotalCost"></span></p>
+      <label for="paymentMethod">Select Payment Method:</label>
+      <select id="paymentMethod">
+        <option value="gpay">Google Pay</option>
+        <option value="phonepay">Phone Pay</option>
+        <option value="razorpay">Razor Pay</option>
+        <option value="card">Credit/Debit Card</option>
+      </select>
+      
+      <!-- Payment Method Option Message -->
+      <div class="payment-option" id="gpayOption">
+        <i class="fab fa-google-pay"></i> Gpay selected
+      </div>
+      <div class="payment-option" id="phonepayOption">
+        <i class="fas fa-phone"></i> Phone Pay selected
+      </div>
+      <div class="payment-option" id="razorpayOption">
+        <i class="fas fa-credit-card"></i> Razor Pay selected
+      </div>
+      <div class="payment-option" id="cardOption">
+        <i class="fas fa-credit-card"></i> Card selected
+      </div>
+
+      <!-- Phone Number Input -->
+      <label for="phoneNumber">Enter Your Phone Number:</label>
+      <input type="text" id="phoneNumber" maxlength="10" placeholder="Enter 10-digit phone number">
+
+      <!-- Pay Button -->
+      <button id="payButton">Pay</button>
+      <button id="closeModal">Close</button>
+    </div>
   </div>
 </body>
 </html>
