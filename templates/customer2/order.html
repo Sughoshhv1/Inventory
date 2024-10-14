@@ -32,8 +32,9 @@
     {% if product.quantiy <= 0 %}
     <p>Quantity: Out of Stock</p>
     {% else %}
-    <p>Quantity: {{ product.quantiy }} Kg</p>
+    <p>Quantity: {{ product.quantity }} Kg</p>
     {% endif %}
+    <p>Cost per quantity: ₹ {{ product.cost_per_item }}</p>
   </div>
   {% empty %}
     <p style="text-align: center;">No products available</p>
@@ -63,6 +64,9 @@
     <label for="order_qt">Quantity:</label>
     <input type="number" id="order_qt" name="order_qt" required>
 
+    <label for="total_cost">Total Cost:</label>
+    <input type="text" id="total_cost" name="total_cost" readonly>
+
     <!-- Submit and reset buttons -->
     <button type="button" class="btn btn-submit" onclick="add_order()">Submit</button>
     <button type="button" class="btn btn-reset" onclick="resetForm()">Reset</button>
@@ -71,7 +75,7 @@
   <!-- Order Details Table -->
   <div class="table-container">
     <h2 style="text-align: center;">Order Details</h2>
-    <table>
+    <table style="text-align: center;">
       <thead>
         <tr>
           <th>Serial Number</th>
@@ -80,6 +84,7 @@
           <th>Product Name</th>
           <th>Quantity</th>
           <th>Created On</th>
+          <th>Total Cost</th>
           <th>Order ID</th>
           <th>Customer ID</th>
           <th>Product ID</th>
@@ -95,6 +100,7 @@
           <td>{{ order.productfk.name }}</td>
           <td>{{ order.total_qt }}  Kg</td>
           <td>{{order.created_att}}</td>
+          <td>{{order.total_cost}}</td>
           <td>{{ order.order_id }}</td>
           <td>{{ order.customerfk.cust_id }}</td>
           <td>{{ order.productfk.pro_id }}</td>
@@ -112,6 +118,7 @@
           <td>{{ order.productfk.name }}</td>
           <td><input type="number" id="ototal{{ order.order_id }}" value="{{ order.total_qt }}"></td>
           <td><input type="date" id="oupdated{{ order.order_id }}" value="{{ order.created_att}}"></td>
+          <td>{{order.total_cost}}</td>
           <td>{{ order.order_id }}</td>
           <td>{{ order.customerfk.cust_id }}</td>
           <td>
@@ -146,6 +153,33 @@
           form.style.display = "none";
       }
   });
+
+  // Function to calculate total cost
+function calculateTotalCost() {
+  var order_qt = $("#order_qt").val();
+  var product_id = $("#product_id").val();
+
+  if (product_id && order_qt > 0) {
+    $.ajax({
+      url: "{% url 'get_product_cost' %}",  // Create a new endpoint for fetching product cost
+      data: { 'product_id': product_id },
+      success: function(data) {
+        if (data.status === 'success') {
+          var cost_per_item = data.cost_per_item;  // Get cost per item from the response
+          var total_cost = (cost_per_item * order_qt).toFixed(2);  // Calculate total cost
+          $("#total_cost").val(total_cost);  // Update the total cost input field
+        } else {
+          $("#total_cost").val(0);
+        }
+      }
+    });
+  } else {
+    $("#total_cost").val(0);
+  }
+}
+
+// Update quantity change listener
+$('#order_qt').on('input', calculateTotalCost);
 
   // Live search for products using AJAX
   $('#product_search').on('input', function() {
@@ -185,18 +219,18 @@ $(document).on('click', '.product-item', function() {
       var product_id = $("#product_id").val();
       var order_created = $("#order_created").val();
       var order_qt = $("#order_qt").val();
-
-    // this is to validate that the field is mandatory to be filled
-    if ( !product_search || !order_created || !order_qt) {
-      alert("All fields are required!");
-      return;
-  }
-  
-  if (order_qt <= 0) {
-    alert("Quantity must be greater than zero!");
-    return;
-  }
-
+      var total_cost = $("#total_cost").val();  // Get the total cost
+    
+      if (!product_id || !order_created || !order_qt) {
+        alert("All fields are required!");
+        return;
+      }
+    
+      if (order_qt <= 0) {
+        alert("Quantity must be greater than zero!");
+        return;
+      }
+    
       $.ajax({
         type: "POST",
         url: "{% url 'CreateOrdercust' %}",
@@ -204,16 +238,17 @@ $(document).on('click', '.product-item', function() {
           "product_id": product_id,
           "order_created": order_created,
           "order_qt": order_qt,
+          "total_cost": total_cost,  // Send total cost
         },
-        success: function (data) {
+        success: function(data) {
           if (data.status === "pass") {
-            alert("Order Successfull")
-            window.location.reload();  // Reload the page to show updated order details
+            alert("Order Successful");
+            window.location.reload();
           } else {
             alert(data.message);
           }
         },
-        error: function (error) {
+        error: function(error) {
           alert("An error occurred.");
         }
       });
@@ -281,6 +316,7 @@ $(document).on('click', '.product-item', function() {
        document.getElementById("product_search").value = "";
        document.getElementById("order_created").value = "";
        document.getElementById("order_qt").value = "";
+       document.getElementById("total_cost").value = "";
    }
   </script>
 </body>

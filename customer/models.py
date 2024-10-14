@@ -36,19 +36,26 @@ class Vendor(models.Model):
     userid=models.ForeignKey(Usertype,on_delete=models.CASCADE)
 
 class Product(models.Model):
-    pro_id =models.AutoField(primary_key=True) 
+    pro_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)  # Product name
-    quantiy = models.DecimalField(max_digits=10, decimal_places=2)  # Price with 2 decimal places
-    category= models.CharField(max_length=200)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)  # Quantity of the product
+    cost_per_item = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Cost of a single product
+    category = models.CharField(max_length=200)  # Product category
    
 
 class Order(models.Model):
-    order_id =models.AutoField(primary_key=True)
-    customerfk=models.ForeignKey(Customer,on_delete=models.CASCADE)
-    productfk=models.ForeignKey(Product,on_delete=models.CASCADE)
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Payment Done', 'Payment Done'),
+    ]
+
+    order_id = models.AutoField(primary_key=True)
+    customerfk = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    productfk = models.ForeignKey(Product, on_delete=models.CASCADE)
     created_att = models.DateField()
     total_qt = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
 
 class InventoryItem(models.Model):
     inven_id =models.AutoField(primary_key=True)

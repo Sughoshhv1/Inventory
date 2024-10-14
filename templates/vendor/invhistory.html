@@ -17,32 +17,38 @@
 <body>
   <!-- Inventory Details Table -->
   <div class="table-container">
-  <h2 style="text-align: center;">Inventory History Details</h2>
-    <table>
+    <h2 style="text-align: center;">Inventory History Details</h2>
+    <table style="text-align: center;">
       <thead>
         <tr>
-          <th>Serial Number</th>
-          <th>Vendor Name</th>
+          <th>Date</th>
           <th>Category</th>
           <th>Product Name</th>
           <th>Quantity</th>
-          <th>Added On</th>
+          <th>Total Quantity for Date</th>
         </tr>
       </thead>
       <tbody>
-        {% for item in userdata %}
-        <tr id="row-{{ item.inven_id }}">
-          <td>{{ forloop.counter }}</td>
-          <td>{{ item.vendor.vend_name }}</td>
+        {% for summary in inventory_summary|dictsort:"date" %}
+        <tr>
+          <td rowspan="{{ summary.items|length }}">{{ summary.date }}</td>
+          <td>{{ summary.items.0.product.category }}</td>
+          <td>{{ summary.items.0.product.name }}</td>
+          <td>{{ summary.items.0.quantity }} Kg</td>
+          <td rowspan="{{ summary.items|length }}">{{ summary.total_quantity }} Kg</td>
+        </tr>
+
+        {% for item in summary.items|slice:"1:" %}
+        <tr>
           <td>{{ item.product.category }}</td>
           <td>{{ item.product.name }}</td>
-          <td>{{ item.quantity }}  Kg</td>
-          <td>{{item.created_at}}</td>
+          <td>{{ item.quantity }} Kg</td>
         </tr>
+        {% endfor %}
         {% empty %}
-          <tr>
-            <td colspan="6" style="text-align: center;">No Items added Yet</td>
-          </tr>
+        <tr>
+          <td colspan="6" style="text-align: center;">No Items added Yet</td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>

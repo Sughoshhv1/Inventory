@@ -143,8 +143,8 @@ body {
     justify-content:space-evenly;
     cursor: pointer;
     box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
-    height: 100px;
-    width: 200px; /* Adjust width as needed */
+    height: 90px;
+    width: 180px; /* Adjust width as needed */
     text-align: center;
     transition: background 0.3s, color 0.3s; /* Ensure transition is smooth */
 }
@@ -485,7 +485,7 @@ i {
       background-color: rgba(247, 247, 247,0.1);
       border: 1px solid #ddd;
       border-radius: 8px;
-      width: 185px;
+      max-width: 350px;
       margin: 10px;
       padding: 15px;
       text-align: center;
@@ -542,3 +542,118 @@ i {
         font-weight: bold;
     }
     
+ /* payment section css */
+    #paymentModal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding-top: 60px;
+      }
+  
+      #paymentModal > div {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        width: 400px;
+        text-align: center;
+      }
+  
+      .modal-header h2 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+  
+      .modal-content label {
+        font-weight: bold;
+        margin-top: 10px;
+      }
+  
+      #paymentMethod {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+      }
+  
+      .payment-option {
+        display: none;
+        margin: 20px 0;
+        color: #28a745;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+  
+      .payment-option i {
+        margin-right: 10px;
+      }
+  
+      .pay-button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+  
+      .pay-button:hover {
+        background-color: #218838;
+      }
+  
+      .pay-button.disabled {
+        background-color: #c82333;
+        cursor: not-allowed;
+      }
+  
+      .pay-button.completed {
+        background-color: #6c757d;
+        color: white;
+        cursor: not-allowed;
+        font-size: 12px;
+      }
+  
+      #payButton {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+  
+      #payButton:hover {
+        background-color: #0056b3;
+      }
+  
+      #closeModal {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+  
+      #closeModal:hover {
+        background-color: #c82333;
+      }
+  
+      .icon-wrapper {
+        margin-bottom: 15px;
+      }

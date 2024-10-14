@@ -10,6 +10,7 @@ from .models import Order
 from .models import Customer, Product, Order
 from .models import InventoryItem, Usertype
 from decimal import Decimal, InvalidOperation
+from django.db import IntegrityError
 
 
 # Create your views here.
@@ -111,17 +112,27 @@ class create(APIView):
 
 
 
-class create_product(APIView):
-    def post(self,request):
-        product_name = request.POST["product_name"]
-        product_qt=request.POST["product_qt"]
-        product_cat=request.POST["product_cat"]
-        psr=Product()
-        psr.name=product_name
-        psr.quantiy=product_qt
-        psr.category=product_cat
-        psr.save()
-        return JsonResponse({"status":"pass"})
+class CreateProduct(APIView):
+    def post(self, request):
+        product_name = request.POST.get("product_name")
+        product_qt = request.POST.get("product_qt")
+        product_cat = request.POST.get("product_cat")
+        product_cost= request.POST.get("product_cost")
+   
+        # Check if product already exists
+        if Product.objects.filter(name=product_name).exists():
+            return JsonResponse({"status": "error", "message": "This product name is already present."})
+
+        try:
+            psr = Product()
+            psr.name = product_name
+            psr.quantity = product_qt
+            psr.cost_per_item=product_cost
+            psr.category = product_cat
+            psr.save()
+            return JsonResponse({"status": "success","message": "Product Saved Successfully."})
+        except IntegrityError:
+            return JsonResponse({"status": "error", "message": "Could not save product."})
     
 
 
@@ -133,6 +144,7 @@ class CreateOrder(APIView):
             product_id = request.POST.get("product_id")
             order_created = request.POST.get("order_created")
             order_qt = request.POST.get("order_qt")
+            total_cost = request.POST.get("total_cost")  # Get the total cost from request
 
 
             # Debugging logs
@@ -167,11 +179,12 @@ class CreateOrder(APIView):
 
             # Check if there's enough stock for the product
 
-            if product.quantiy == 0:
+            if product.quantity == 0:
                 return JsonResponse({"status": "fail", "message": "Out of stock"})
 
-            if product.quantiy < order_qt:
-                return JsonResponse({"status": "fail", "message": f"Only {product.quantiy} in stock, please adjust the order quantity"})
+            if product.quantity < order_qt:
+                return JsonResponse({"status": "fail", "message": f"Only {product.quantity} in stock, please adjust the order quantity"})
+            
 
             # Create a new order
             order = Order(
@@ -179,11 +192,12 @@ class CreateOrder(APIView):
                 productfk=product,
                 created_att=order_created,
                 total_qt=order_qt,
+                total_cost=total_cost  # Add total cost if you want to save it in the order
             )
             order.save()
 
             # Update the product's quantity by reducing the ordered quantity
-            product.quantiy -= order_qt
+            product.quantity -= order_qt
             product.save()
         
             return JsonResponse({"status": "pass", "message": "Order placed successfully."})
@@ -235,7 +249,7 @@ class create_inventory(APIView):
         inventory_item.save()
 
         # Update the product's quantity by adding the new quantity from inventory
-        product.quantiy = product.quantiy + quantity
+        product.quantity = product.quantity + quantity
         product.save()
 
         return JsonResponse({"status": "pass"})
@@ -252,7 +266,7 @@ class delete_inventory(APIView):
         inventory_id = request.POST["item_id"]
         inv=InventoryItem.objects.get(inven_id=inventory_id)
         product1=inv.product
-        product1.quantiy -= inv.quantity
+        product1.quantity -= inv.quantity
         product1.save()
         InventoryItem.objects.filter(inven_id =inventory_id).delete()
         return JsonResponse({"status":"pass"})
@@ -275,7 +289,7 @@ class delete_order(APIView):
         product = order.productfk
 
         # Restore the product quantity by adding back the order's quantity
-        product.quantiy += order.total_qt
+        product.quantity += order.total_qt
         product.save()
 
         # Delete the order
@@ -435,7 +449,7 @@ class u_order(TemplateView):
         # Fetch customers and products for dropdowns
         customers = Customer.objects.all()
         products = Product.objects.all()
-        order_data = Order.objects.all()
+        order_data = Order.objects.filter(status="Pending")
 
         # Update the context
         context.update({
@@ -450,7 +464,6 @@ class u_order(TemplateView):
             "orders": order_data,
             "currentuser" :current_user
         })
-
         return context
 
 
@@ -552,7 +565,7 @@ class edit_inventory(APIView):
         # Calculate the difference and update the product's quantity accordingly
         quantity_difference = inv_total - old_quantity
 
-        product.quantiy += quantity_difference
+        product.quantity += quantity_difference
         product.save()
 
         return JsonResponse({"status": "success"})   
@@ -572,23 +585,26 @@ class edit_order(APIView):
 
         quantity_difference = order_total - old_quantity 
 
-        if product.quantiy < quantity_difference:
-            return JsonResponse({"status": "out_of_stock", "message": f"Only {product.quantiy} in stock, please adjust the order quantity"})
+        if product.quantity < quantity_difference:
+            return JsonResponse({"status": "out_of_stock", "message": f"Only {product.quantity} in stock, please adjust the order quantity"})
 
-        if product.quantiy == 0:
+        if product.quantity == 0:
             return JsonResponse({"status": "out_of_stock", "message": "Out of stock"})
 
-        # if product.quantiy < quantity_difference:
-        #     return JsonResponse({"status": "fail", "message": f"Only {product.quantiy} in stock, please adjust the order quantity"})
+        # if product.quantity < quantity_difference:
+        #     return JsonResponse({"status": "fail", "message": f"Only {product.quantity} in stock, please adjust the order quantity"})
+
+        new_total_cost = order_total * product.cost_per_item
 
         Order.objects.filter(order_id=order_id).update(
                 total_qt=order_total,
                 productfk_id=product_id, # Assuming productfk is a ForeignKey
                 created_att=O_date,
-                customerfk=O_customer
+                customerfk=O_customer,
+                total_cost=new_total_cost
             )
 
-        product.quantiy -= quantity_difference
+        product.quantity -= quantity_difference
         product.save()
 
         return JsonResponse({"status": "success"}) 
@@ -600,7 +616,7 @@ class edit_product(APIView):
         pqt=request.POST['pqt']
         userdata= Product.objects.filter(pro_id=uid).update(
             name=pname,
-            quantiy=pqt
+            quantity=pqt
             )
         return JsonResponse({"status":"pass"})     
 
@@ -617,27 +633,31 @@ class login_check_ajax(APIView):
             return JsonResponse({"status":"fail"})
 # from here customer page operations starts
 
-class u_orderhistory(TemplateView):
-    template_name = "customer2/orderhistory.html"
+# class u_orderhistory(TemplateView):
+#     template_name = "customer2/orderhistory.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
 
-        # Existing data fetching
-        user_data = Order.objects.all()
-        current_user = self.request.session.get("user_data", None)
+#         # Existing data fetching
+#         user_data = Order.objects.all()
+#         current_user = self.request.session.get("user_data", None)
 
-        # Fetch customers and products for dropdowns
-        order_data = Order.objects.all()
+#         # Fetch customers and products for dropdowns
+#         order_data = Order.objects.all()
 
-        # Update the context
-        context.update({
-            "userdata": user_data,
-            "orders": order_data,
-            "currentuser" :current_user
-        })
+#         # Update the context
+#         context.update({
+#             "userdata": user_data,
+#             "orders": order_data,
+#             "currentuser" :current_user
+#         })
 
-        return context
+#         return context
+
+from django.db.models import Q
+from django.views.generic import TemplateView
+from .models import Order, Usertype, Customer, Product
 
 class u1_order(TemplateView):
     template_name = "customer2/order.html"
@@ -648,8 +668,10 @@ class u1_order(TemplateView):
         # Fetch the current user's ID from the session
         current_user_id = self.request.session.get("user_id")
 
-        # Fetch orders only for the current user using the correct ForeignKey field names
-        user_orders = Order.objects.filter(customerfk__userid__user_id=current_user_id)
+        # Fetch orders only for the current user with status 'Pending'
+        user_orders = Order.objects.filter(
+            Q(customerfk__userid__user_id=current_user_id) & Q(status="Pending")
+        )
 
         # Fetch other counts
         order_count = user_orders.count()
@@ -664,7 +686,7 @@ class u1_order(TemplateView):
 
         # Update the context
         context.update({
-            "orders": user_orders,  # Pass only current user's orders
+            "orders": user_orders,  # Pass only current user's pending orders
             "order_count": order_count,
             "vendor_count": vendor_count,
             "cust_count": cust_count,
@@ -678,6 +700,51 @@ class u1_order(TemplateView):
 
         return context
 
+
+from collections import defaultdict
+from datetime import datetime
+
+class u_orderhistory(TemplateView):
+    template_name = "customer2/orderhistory.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Fetch the current user's ID from the session
+        current_user_id = self.request.session.get("user_id")
+
+        # Fetch orders only for the current user, grouped by date
+        user_orders = Order.objects.filter(customerfk__userid__user_id=current_user_id).order_by('created_att')
+
+        # Group orders by date and status
+        grouped_orders = defaultdict(list)
+        for order in user_orders:
+            order_date = order.created_att  # Date object
+            grouped_orders[order_date].append(order)
+
+        # Prepare order summaries
+        order_summary = []
+        for date, orders in grouped_orders.items():
+            total_cost = sum(order.total_cost for order in orders)
+            pending_cost = sum(order.total_cost for order in orders if order.status == 'Pending')
+
+            order_summary.append({
+                "date": date,
+                "orders": orders,
+                "total_cost": total_cost,
+                "pending_cost": pending_cost  # Keep track of pending payments separately
+            })
+
+        # Update the context
+        context.update({
+            "order_summary": order_summary,
+            "currentuser": self.request.session.get("user_data"),
+            "currentid": current_user_id,
+        })
+
+        return context
+
+
 class CreateOrdercust(APIView):
     def post(self, request):
         try:
@@ -686,6 +753,7 @@ class CreateOrdercust(APIView):
             product_id = request.POST.get("product_id")
             order_created = request.POST.get("order_created")
             order_qt = request.POST.get("order_qt")
+            total_cost = request.POST.get("total_cost")
 
             # Debugging logs
             print(f"Current User ID: {current_user_id}")
@@ -719,11 +787,11 @@ class CreateOrdercust(APIView):
                 return JsonResponse({"status": "fail", "message": "Invalid order quantity format"})
 
             # Check if there's enough stock for the product
-            if product.quantiy == 0:
+            if product.quantity == 0:
                 return JsonResponse({"status": "fail", "message": "Out of stock"})
 
-            if product.quantiy < order_qt:
-                return JsonResponse({"status": "fail", "message": f"Only {product.quantiy} in stock, please adjust the order quantity"})
+            if product.quantity < order_qt:
+                return JsonResponse({"status": "fail", "message": f"Only {product.quantity} in stock, please adjust the order quantity"})
 
             # Create a new order
             order = Order(
@@ -731,11 +799,12 @@ class CreateOrdercust(APIView):
                 productfk=product,
                 created_att=order_created,
                 total_qt=order_qt,
+                total_cost=total_cost
             )
             order.save()
 
             # Update the product's quantity by reducing the ordered quantity
-            product.quantiy -= order_qt
+            product.quantity -= order_qt
             product.save()
         
             return JsonResponse({"status": "pass", "message": "Order placed successfully."})
@@ -759,22 +828,26 @@ class edit_ordercust(APIView):
 
         quantity_difference = order_total - old_quantity 
 
-        if product.quantiy < quantity_difference:
-            return JsonResponse({"status": "out_of_stock", "message": f"Only {product.quantiy} in stock, please adjust the order quantity"})
+        if product.quantity < quantity_difference:
+            return JsonResponse({"status": "out_of_stock", "message": f"Only {product.quantity} in stock, please adjust the order quantity"})
 
-        if product.quantiy == 0:
+        if product.quantity == 0:
             return JsonResponse({"status": "out_of_stock", "message": "Out of stock"})
 
-        # if product.quantiy < quantity_difference:
-        #     return JsonResponse({"status": "fail", "message": f"Only {product.quantiy} in stock, please adjust the order quantity"})
+        # if product.quantity < quantity_difference:
+        #     return JsonResponse({"status": "fail", "message": f"Only {product.quantity} in stock, please adjust the order quantity"})
+
+        # Calculate the new total cost based on the updated quantity
+        new_total_cost = order_total * product.cost_per_item
 
         Order.objects.filter(order_id=order_id).update(
                 total_qt=order_total,
                 productfk_id=product_id, # Assuming productfk is a ForeignKey
                 created_att=O_date,
+                total_cost=new_total_cost
             )
 
-        product.quantiy -= quantity_difference
+        product.quantity -= quantity_difference
         product.save()
 
         return JsonResponse({"status": "success"}) 
@@ -817,7 +890,6 @@ class customer_usercust(TemplateView):
         return context
 
 # from here vendor page operations starts
-
 class create_inventoryvend(APIView):
     def post(self, request):
         vendor_id = request.session.get("user_id")  # Get current logged-in user's ID from the session
@@ -859,7 +931,7 @@ class create_inventoryvend(APIView):
         inventory_item.save()
 
         # Update the product's quantity by adding the new quantity from inventory
-        product.quantiy = product.quantiy + quantity
+        product.quantity = product.quantity + quantity
         product.save()
 
         return JsonResponse({"status": "pass"})
@@ -907,17 +979,34 @@ class u_inventoryvendhistory(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Fetch the current user's ID from the session
         current_user_id = self.request.session.get("user_id")
 
-        # Fetch orders only for the current user using the correct ForeignKey field names
+        # Fetch inventory items only for the current vendor using the correct ForeignKey field names
         user_orders = InventoryItem.objects.filter(vendor__userid__user_id=current_user_id)
 
         current_user = self.request.session.get("user_data", None)
 
-        # Updating context
+        # Group inventory items by date (use the `created_at` as-is)
+        grouped_items = defaultdict(list)
+        for item in user_orders:
+            added_date = item.created_at  # No need to call .date() since it's already a date/datetime object
+            grouped_items[added_date].append(item)
+
+        # Prepare inventory summaries
+        inventory_summary = []
+        for date, items in grouped_items.items():
+            total_quantity = sum(item.quantity for item in items)
+            inventory_summary.append({
+                "date": date,
+                "items": items,
+                "total_quantity": total_quantity
+            })
+
+        # Update context
         context.update({
-            "userdata": user_orders,
-            "currentuser" :current_user
+            "inventory_summary": inventory_summary,
+            "currentuser": current_user,
         })
 
         return context
@@ -976,7 +1065,7 @@ class edit_inventoryvend(APIView):
         # Calculate the difference and update the product's quantity accordingly
         quantity_difference = inv_total - old_quantity
 
-        product.quantiy += quantity_difference
+        product.quantity += quantity_difference
         product.save()
 
         return JsonResponse({"status": "success"}) 
@@ -1123,7 +1212,7 @@ class u_order11(TemplateView):
         # Fetch customers and products for dropdowns
         customers = Customer.objects.all()
         products = Product.objects.all()
-        order_data = Order.objects.all()
+        order_data = Order.objects.filter(status="Pending")
 
         # Update the context
         context.update({
@@ -1186,3 +1275,44 @@ class ProductSearchView(View):
         products = Product.objects.filter(name__icontains=search_term)
         product_list = [{"id": product.pro_id, "name": product.name} for product in products]
         return JsonResponse(product_list, safe=False)
+    
+class GetProductCost(APIView):
+    def get(self, request):
+        product_id = request.GET.get("product_id")
+        try:
+            product = Product.objects.get(pro_id=product_id)
+            return JsonResponse({"status": "success", "cost_per_item": str(product.cost_per_item)})
+        except Product.DoesNotExist:
+            return JsonResponse({"status": "fail", "message": "Product not found"})
+        
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import Order  # Ensure you import your Order model
+from django.utils import timezone
+
+@csrf_exempt
+def confirm_payment(request):
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+
+        try:
+            # Get the order by its ID
+            order = Order.objects.get(pk=order_id)
+
+            # Get the date of the order (consider only date, not time)
+            order_date = order.created_att
+
+            # Filter all unpaid orders for that date (including the new one)
+            unpaid_orders = Order.objects.filter(
+                created_att=order_date, 
+                status='Pending'
+            )
+
+            # Update only unpaid orders for that day
+            unpaid_orders.update(status='Payment Done')
+
+            return JsonResponse({'status': 'success'})
+        except Order.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Order not found.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
