@@ -242,7 +242,7 @@ $(document).on('click', '.product-item', function() {
         },
         success: function(data) {
           if (data.status === "pass") {
-            alert("Order Successful");
+            alert("Order Placed Successfully");
             window.location.reload();
           } else {
             alert(data.message);

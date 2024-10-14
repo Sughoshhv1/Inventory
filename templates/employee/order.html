@@ -257,7 +257,7 @@ $(document).on('click', '.product-item', function() {
         },
         success: function (data) {
           if (data.status === "pass") {
-            alert("Order Successfully Edited")
+            alert("Order Placed Successfully")
             window.location.reload();  // Reload the page to show updated order details
           } else {
             alert(data.message);

@@ -132,6 +132,10 @@
                 {% endif %}
                 </tr>
               {% endfor %}
+              {% empty %}
+            <tr>
+              <td colspan="9" style="text-align: center;">No Orders Yet</td>
+            </tr>
               {% endfor %}
         </tbody>
         </table>

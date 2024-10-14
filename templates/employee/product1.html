@@ -104,6 +104,11 @@ function saveChanges(pro_id) {
     var pname = $('#pname' + pro_id).val();
     var pqt = $('#pquantity' + pro_id).val();
 
+    if (pqt < 0) {
+      alert("Quantity should not be a negative number");
+      return; // Stop the function execution
+    }
+
     if (confirm('Are you sure you want to edit this user?')) {
         $.ajax({
             type: 'POST',
@@ -128,6 +133,11 @@ function add() {
   if (!product_cat) {
       alert("Please select a category.");
       return; // Stop the function execution
+  }
+
+  if (product_qt < 0) {
+    alert("Quantity should not be a negative number");
+    return; // Stop the function execution
   }
 
   // Validate other fields as needed
